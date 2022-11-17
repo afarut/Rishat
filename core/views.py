@@ -1,8 +1,9 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from .models import Item
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, JsonResponse
+from .models import Item, Order
 import stripe
 from django.conf import settings
+from .forms import MultipleChoiceForm
 
 
 def index(request):
@@ -18,25 +19,63 @@ def buy(request, item_id):
 	item = Item.objects.get(id=item_id)
 	stripe.api_key = settings.STRIPE_SECRET_TOKEN
 
-	product = stripe.Product.create(
+	starter_subscription = stripe.Product.create(
 	  name=item.name,
 	  description=item.description,
 	)
 
-	price = stripe.Price.create(
+	starter_subscription_price = stripe.Price.create(
 	  unit_amount=item.price,
 	  currency="usd",
-	  product=product['id'],
+	  product=starter_subscription['id'],
 	)
-	data = stripe.checkout.Session.create(
+	payment_link = stripe.checkout.Session.create(
 	  success_url="https://example.com/success",
 	  cancel_url="https://example.com/cancel",
 	  line_items=[
 	    {
-	      "price": price['id'],
+	      "price": starter_subscription_price['id'],
 	      "quantity": 1,
 	    },
 	  ],
 	  mode="payment",
 	)
-	return JsonResponse({"id": data['id']})
+	return JsonResponse({"id": payment_link['id']})
+
+
+def order(request):
+	stripe.api_key = settings.STRIPE_SECRET_TOKEN
+	items = Item.objects.all()
+	form = MultipleChoiceForm(request.POST or None)
+	choices = tuple([(item.id, item.name) for item in items])
+	form.fields["order"].choices = choices
+	if form.is_valid():
+		items_id = form.cleaned_data.get("order")
+		order = Order.objects.create()
+		catalog = list()
+		for item_id in items_id:
+			item = Item.objects.get(id=item_id)
+			order.items.add(item)
+
+			product = stripe.Product.create(
+			  name=item.name,
+			  description=item.description,
+			)
+
+			price = stripe.Price.create(
+			  unit_amount=item.price,
+			  currency="usd",
+			  #recurring={"interval": "month"},
+			  product=product['id'],
+			)
+			catalog.append({"price": price['id'], "quantity": 1})
+
+		session = stripe.checkout.Session.create(
+		  success_url="https://example.com/success",
+		  cancel_url="https://example.com/cancel",
+		  line_items=catalog,
+		  mode="payment",
+		)
+		order.save()
+		return redirect(session['url'])
+	return render(request, "core/order.html", {"items": items, "form": form})
