@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-a2nndvvm9sdcef%#oh+n75yjlf(pqt1do2q4d5l_2(pflaw)^z"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -125,4 +125,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STRIPE_SECRET_TOKEN = "sk_test_51M4wqJJVOiFpY3UGE3vuWJWs27VmMuOSeDauA0VhgjN158cUU7ftQCkg0v3qSkq3LA7ZAQ5c2eqBJEddL5YcB7tT00ejc376W7"
+STRIPE_SECRET_TOKEN = os.environ.get("STRIPE_SECRET_TOKEN")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")

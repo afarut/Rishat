@@ -11,7 +11,7 @@ def index(request):
 
 def item(request, item_id):
 	item = Item.objects.get(id=item_id)
-	return render(request, "core/item.html", {"item": item})
+	return render(request, "core/item.html", {"item": item, "STRIPE_PUBLISHABLE_KEY": settings.STRIPE_PUBLISHABLE_KEY})
 
 
 def buy(request, item_id):
