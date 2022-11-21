@@ -4,21 +4,43 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title></title>
+
+
+<script type="text/javascript">
+
+function Message(json){
+	var a = document.getElementById("message");
+	if (!json.is_exist){
+		a.innerHTML = "К сожалению такого купона не существует.";
+	}
+	else{
+		a.innerHTML = json.bonus;
+	}
+	if (json.currency != "USD") {
+		a.innerHTML += " Нельзя применить."
+	}
+}
+
+function Check() {
+	var input = document.getElementById("check").value;
+	var a;
+	fetch('/discount/' + input, {
+    	method: "GET",
+  	}).then((responce) => responce.json()).then((json) => Message(json));
+}
+</script>
 </head>
 <body>
-
-<!--<form action="select1.php" method="post">
-<select multiple="" required="">
-	{% for item in items %}
-  		<option>{{item.name}}</option>
-  	{% endfor %}
-</select>
--->
+<p>
+Проверить существование 
+<input type="" id="check">
+<button onclick="Check()">Check</button>
+<p id="message" style="color: grey;"></p>
+</p>
 <form action = "" method = "post">
     {% csrf_token %}
     {{form.as_p }}
     <input type="submit" value="Submit">
 </form>
-
 </body>
 </html>

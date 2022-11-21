@@ -8,6 +8,7 @@ DEMO_CHOICES =(
 )
 class MultipleChoiceForm(forms.Form):
     order = forms.MultipleChoiceField(choices = DEMO_CHOICES)
+    discount = forms.CharField(required=False)
 
     #def __init__(self, choices, *args, **kwargs):
     #    super(MultipleChoiceForm, self).__init__(*args, **kwargs)
